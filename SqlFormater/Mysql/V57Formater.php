@@ -24,7 +24,7 @@ class V57Formater extends BaseFormater
     public function __construct($file_path)
     {
         if (!file_exists($file_path)) {
-            die('数据文件不存在');
+            die('Data file does not exist.');
         }
         $this->file_path = $file_path;
     }
@@ -75,12 +75,35 @@ class V57Formater extends BaseFormater
         }
     }
 
-    public function formatOutput($output_file_path)
+    public function formatOutput($output_file_path, $lang = 'en')
     {
         ob_start();
+        $lang_table = '';
+        $lang_table_head = '';
+        if ($lang == 'en') {
+            $lang_table = "|Name|Type|Length/Values|default|Comments|\n";
+            $lang_table_head = "Table";
+        }
+        if ($lang == 'sc') {
+            $lang_table = "|名字|类型|长度/值|默认值|备注|\n";
+            $lang_table_head = "表";
+        }
+        if ($lang == 'tc') {
+            $lang_table = "|名稱|型態|長度/值|預設值|備註|\n";
+            $lang_table_head = "表";
+        }
+        if ($lang == 'de') {
+            $lang_table = "|Name|Typ|Länge/Werte|Standard|Kommentare|\n";
+            $lang_table_head = "Tabelle";
+        }
+        if ($lang == 'jp') {
+            $lang_table = "|名前|データ型|長さ/値|デフォルト値|コメント|\n";
+            $lang_table_head = "テーブル";
+        }
         foreach ($this->tables as $table) {
-            echo "### " . $table->getTableName() ."表(" . $table->getComment() . ")\n";
-            echo "|字段名|类型|长度|默认值|备注|\n";
+            echo "### " . $table->getTableName() . " ". $lang_table_head . " (" . $table->getComment() . ")\n";
+
+            echo $lang_table;
             echo "|---|---|---|---|---|\n";
             foreach ($table->getColumns() as $column) {
                 echo "|" . $column->getName() . "|" . $column->getType() . "|" . $column->getLength() . "|" . $column->getDefaultValue() . "|" . $column->getComment() . "|\n";

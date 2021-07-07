@@ -1,16 +1,16 @@
 <?php
-/**
- *
- * User: wowo
- * Date: 2019/4/17 下午4:20
- */
+
 namespace s2d;
 
 require_once "./vendor/autoload.php";
 
 use s2d\formater\mysql\V57Formater;
 
-$formater = new V57Formater('./sql/1.sql');
+/*
+* $formater = new V57Formater('[sql-input-path].sql');
+* $formater->formatOutput('[md-output-path].md');
+*/
+$formater = new V57Formater('./sql/init.sql');
 $formater->splitSections();
 $formater->geneTables();
-$formater->formatOutput('./output/1.md');
+$formater->formatOutput('./md/init.md');

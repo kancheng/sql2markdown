@@ -1,27 +1,89 @@
-> 实际工作中，经常要用到数据字典。在项目初期维护数据字典很容易，但随着项目的推进，数据库结构的改动，这项维护工作变得越来越困难。如果你的数据库结构中的备注写的够全，那么直接将sql语句导出成为markdown表格肯定会让数据字典维护工作变得更加轻松。导出的内容可以在markdown编辑器中显示成优美的markdown格式，然后拷贝到文档中心，轻而易举。
 
-所以，我使用php写了一个小工具，可以将dump出来的sql建表语句直接转成markdown。
+# sql2markdown
 
-### 使用方法
-1. clone项目到本地，进入项目，新建sql（输入用到的sql文件）、output（markdown输出文件）目录；
-2. 导出sql建表语句到文件，保存到sql文件夹中，样例如下所示：
-```sql
-CREATE TABLE `blog` (
-  `id` int(10) NOT NULL AUTO_INCREMENT,
-  `title` varchar(255) NOT NULL,
-  `uid` int(10) NOT NULL,
-  `content` text NOT NULL,
-  `abstract` varchar(256) NOT NULL DEFAULT '',
-  `tags` varchar(60) DEFAULT '',
-  `gmt_create` int(10) NOT NULL,
-  `gmt_modified` int(10) NOT NULL,
-  `author` varchar(60) NOT NULL DEFAULT '路人甲',
-  `visit_times` int(11) DEFAULT '0' COMMENT '访问次数',
-  `des` varchar(128) NOT NULL DEFAULT '该文暂无简介',
-  PRIMARY KEY (`id`)
-) ENGINE=InnoDB AUTO_INCREMENT=91 DEFAULT CHARSET=utf8;
-...
+## Detail
+
+該專案來源自 huangjun0808/sql2markdown 的 wowo-zZ 和 huangjun0808 進行修改，實際著專案功能的不斷增加，資料庫的結構也就越來越龐大。若資料庫在備助的部分寫得構詳細，那麼將 SQL 結構轉成 Markdown 表格，在文件撰寫上會省下不少工作量。
+
+
+## Method
+
+1. Clone 專案到本地後，進入本地的專案資料目錄，建立需要讀取 SQL 文件目錄與 Markdown 輸出的目錄。
+
+```cmd
+$ git clone git@github.com:kancheng/sql2markdown.git
+
+$ cd [sql2markdown-project path]
+
+$ composer update
+
+$ composer install
+
 ```
-3. 修改convert.php，将其中的sql目录和output目录的文件名换成你的：
-![在这里插入图片描述](https://img-blog.csdnimg.cn/20190418154105770.png?x-oss-process=image/watermark,type_ZmFuZ3poZW5naGVpdGk,shadow_10,text_aHR0cHM6Ly9pZGlvdC5ibG9nLmNzZG4ubmV0,size_16,color_FFFFFF,t_70)
-4. 在项目目录运行`php convert.php`，即可在output文件夹下看到输出的markdown文件，拿去用吧~
+
+2. 匯出 SQL 結構到檔案中，副檔名為 `*.sql`  隨後存到後面需要的 SQL 目錄 ，範例如下：
+
+```sql
+CREATE TABLE `info` (
+  `id` int(11) NOT NULL DEFAULT '1000' COMMENT '編碼',
+  `name` varchar(155) COLLATE utf8_unicode_ci NOT NULL COMMENT '姓名',
+  `address` varchar(255) COLLATE utf8_unicode_ci NOT NULL COMMENT '地址',
+  `account_name` varchar(155) COLLATE utf8_unicode_ci NOT NULL COMMENT '帳戶名稱',
+  `account_number` varchar(155) COLLATE utf8_unicode_ci NOT NULL COMMENT '帳戶編號',
+  `swift_code` varchar(155) COLLATE utf8_unicode_ci DEFAULT NULL COMMENT 'SWIFT 代碼',
+  `comments` text COLLATE utf8_unicode_ci COMMENT '帳戶額外資訊'
+) ENGINE=InnoDB DEFAULT CHARSET=utf8 COLLATE=utf8_unicode_ci;
+COMMIT;
+```
+3. 修改專案目錄下的 `convert.php` 檔案，將需要讀取 SQL 文件目錄與 Markdown 輸出目錄等路徑替換。
+
+```convert-php
+<?php
+
+namespace s2d;
+
+require_once "./vendor/autoload.php";
+
+use s2d\formater\mysql\V57Formater;
+
+/*
+* $formater = new V57Formater('[sql-input-path].sql');
+* $formater->formatOutput('[md-output-path].md');
+*/
+$formater = new V57Formater('./sql/init.sql');
+$formater->splitSections();
+$formater->geneTables();
+$formater->formatOutput('./md/init.md');
+```
+
+4. 表頭可以選擇顯示的語系，預設為英文。
+
+```
+
+// English
+$formater->formatOutput('./md/init.md', 'en');
+
+// 简体中文
+$formater->formatOutput('./md/init.md', 'sc');
+
+// 繁體中文
+$formater->formatOutput('./md/init.md', 'tc');
+
+// Deutsch
+$formater->formatOutput('./md/init.md', 'de');
+
+// 日本語
+$formater->formatOutput('./md/init.md', 'jp');
+
+
+```
+
+5. 在專案目錄下運行 `php convert.php` ，即可在指定的 Markdown 輸出目錄下看到產生的 Markdown 文件。
+
+``` php-run
+$ php convert.php
+```
+
+6. Demo
+
+測試與產生的資料與檔案放於，`result` 目錄下，包含原 `huangjun0808/sql2markdown` 專案的 Demo 檔案與不同語言的表格抬頭。
